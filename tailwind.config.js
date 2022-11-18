@@ -7,7 +7,7 @@ module.exports = {
       primaryGray: "#232424",
       button: "#D55F52",
       hover: "#DB7B71",
-      error: "#D55F52",
+      error: "#ff3333",
     },
     extend: {},
   },

@@ -18,6 +18,8 @@
 
 • React Icon
 
+• jest
+
 # Front-end Style Guide
 
 ## Colors
@@ -57,6 +59,14 @@
 
 • [Upgrade-Guide](https://beta.nextjs.org/docs/upgrade-guide)
 
+• [Disable form validation in browser](https://stackoverflow.com/questions/9399528/disable-form-validation-in-browser)
+
 ### Demo
 
 You can see [Broccoli & Co App]()
+
+### What I am planning to do 
+
+1. Custom Hook - Repetition of different states is an issue. I should learn how to make a custom-hook for a variety of input
+
+2. Cypress - End to End testing is important and make sure UX is running fine
