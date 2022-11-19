@@ -6,6 +6,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 
 import { MdOutlineClose } from "react-icons/md";
+import axios from "axios";
 
 interface requestForm {
   enteredFullName: string;
@@ -23,6 +24,7 @@ const Home = () => {
   const [isOpenModal, setisOpenModal] = useState<boolean>(false);
   const [isFormIsValid, setisFormIsValid] = useState<boolean>(false);
   const [isSuccessful, setisSuccessful] = useState<boolean>(false);
+  const [emailFormatIsValid, setemailFormatIsValid] = useState<boolean>(false);
 
   const [values, setValues] = useState<requestForm>({
     enteredFullName: "",
@@ -47,9 +49,6 @@ const Home = () => {
   const ceEmailIsInvalid = !enteredCEIsInvalid && blurs["enteredConfirmEmail"];
 
   const url = "https://us-central1-blinkapp-684c1.cloudfunctions.net/fakeAuth";
-  useEffect(() => {
-
-  }, []);
 
   useEffect(() => {
     if (enterFullNameIsValid && enteredEmailIsValid && enteredCEIsInvalid) {
@@ -75,9 +74,28 @@ const Home = () => {
 
   const sendSubmitHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!enterFullNameIsValid) return;
-    Object.fromEntries(Object.keys(values).map((key) => [key, ""]));
-    Object.fromEntries(Object.keys(blurs).map((key) => [key, false]));
+    axios
+      .post(url, {
+        name: values["enteredFullName"],
+        email: values["enteredEmail"],
+      })
+      .then(() => setisSuccessful(true))
+      .catch((error) => {
+        console.log(error);
+        if (values["enteredEmail"] === "usedemail@blinq.app") {
+          setemailFormatIsValid(true);
+        }
+      });
+
+    const newValues = Object.keys(values).reduce((accumulator, key) => {
+      return { ...accumulator, [key]: "" };
+    }, {});
+    const newBlurs = Object.keys(blurs).reduce((accumulator, key) => {
+      return { ...accumulator, [key]: false };
+    }, {});
+
+    setValues(newValues as requestForm);
+    setBlurs(newBlurs as blurType);
   };
 
   const openModalHandler = () => {
@@ -113,7 +131,11 @@ const Home = () => {
                   You will be one of the first to experience Broccoli & Co. when
                   we launch.
                 </p>
-                <Button text={"OK"} onClick={closeModalHandler} />
+                <Button
+                  text={"OK"}
+                  type={"button"}
+                  onClick={closeModalHandler}
+                />
               </div>
             ) : (
               <div className="flex flex-col gap-6">
@@ -145,8 +167,13 @@ const Home = () => {
                   />
                   {emailIsInvalid && (
                     <p className="mt-1 text-error text-sm">
-                      Your Email Address must have at least 3 length and contain
-                      a single @
+                      Your Email Address must have at least 3 length and
+                      containa single @
+                    </p>
+                  )}
+                  {emailFormatIsValid && (
+                    <p className="mt-1 text-error text-sm">
+                      usedemail@blinq.app is invalid. Please change it
                     </p>
                   )}
                 </div>
@@ -166,7 +193,7 @@ const Home = () => {
                     </p>
                   )}
                 </div>
-                <Button text={"Send"} isDisable={!isFormIsValid} />
+                <Button text={"Send"} disabled={!isFormIsValid} />
               </div>
             )}
           </form>
