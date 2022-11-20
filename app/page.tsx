@@ -104,6 +104,7 @@ const Home = () => {
 
   const closeModalHandler = () => {
     setisOpenModal(false);
+    setisSuccessful(false);
   };
 
   return (

@@ -69,4 +69,4 @@ You can see [Broccoli & Co App]()
 
 1. Custom Hook - Repetition of different states is an issue. I should learn how to make a custom-hook for a variety of input
 
-2. Cypress - End to End testing is important and make sure UX is running fine
+2. Cypress - End to End testing is important and make sure UX is running fine. Ex" users log in 
