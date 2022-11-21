@@ -69,4 +69,6 @@ You can see [Broccoli & Co App](https://broccoli-co.vercel.app)
 
 1. Custom Hook - Repetition of different states is an issue. I should learn how to make a custom-hook for a variety of input
 
-2. Cypress - End to End testing is important and make sure UX is running fine. Ex" users log in 
+2. Studying more jest and testing - I have not experienced with testing so I am going to practice after the challenge
+   
+3. Cypress - End to End testing is important and make sure UX is running fine. Ex" users log in 
