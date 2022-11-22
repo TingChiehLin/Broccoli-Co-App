@@ -5,6 +5,7 @@ import { useState, useEffect, FormEvent, ChangeEvent, FocusEvent } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
 
+import { FaSpinner } from "react-icons/fa";
 import { MdOutlineClose } from "react-icons/md";
 import axios from "axios";
 
@@ -25,6 +26,7 @@ const Home = () => {
   const [isFormIsValid, setisFormIsValid] = useState<boolean>(false);
   const [isSuccessful, setisSuccessful] = useState<boolean>(false);
   const [emailFormatIsValid, setemailFormatIsValid] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
 
   const [values, setValues] = useState<requestForm>({
     enteredFullName: "",
@@ -74,12 +76,23 @@ const Home = () => {
 
   const sendSubmitHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isLoading) {
+      return;
+    }
+
+    setLoading(true);
+    setisSuccessful(false);
+
     axios
       .post(url, {
         name: values["enteredFullName"],
         email: values["enteredEmail"],
       })
-      .then(() => setisSuccessful(true))
+      .then(() => {
+        setLoading(false);
+        setisSuccessful(true);
+      })
       .catch((error) => {
         console.log(error);
         if (values["enteredEmail"] === "usedemail@blinq.app") {
@@ -105,6 +118,14 @@ const Home = () => {
   const closeModalHandler = () => {
     setisOpenModal(false);
     setisSuccessful(false);
+    const newValues = Object.keys(values).reduce((accumulator, key) => {
+      return { ...accumulator, [key]: "" };
+    }, {});
+    const newBlurs = Object.keys(blurs).reduce((accumulator, key) => {
+      return { ...accumulator, [key]: false };
+    }, {});
+    setValues(newValues as requestForm);
+    setBlurs(newBlurs as blurType);
   };
 
   return (
@@ -194,7 +215,18 @@ const Home = () => {
                     </p>
                   )}
                 </div>
-                <Button text={"Send"} disabled={!isFormIsValid} />
+                {isLoading && (
+                  <div>
+                    <FaSpinner
+                      className="mx-auto"
+                      size={"2rem"}
+                      onClick={closeModalHandler}
+                    />
+                  </div>
+                )}
+                {!isLoading && (
+                  <Button text={"Send"} disabled={!isFormIsValid} />
+                )}
               </div>
             )}
           </form>
