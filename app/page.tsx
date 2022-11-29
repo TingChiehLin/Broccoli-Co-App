@@ -9,70 +9,136 @@ import { FaSpinner } from "react-icons/fa";
 import { MdOutlineClose } from "react-icons/md";
 import axios from "axios";
 
-interface requestForm {
-  enteredFullName: string;
-  enteredEmail: string;
-  enteredConfirmEmail: string;
+type fieldValidator = (currentValues: requestForm) => string;
+
+interface FieldConfig {
+  value: string;
+  error: string;
+  validator: fieldValidator;
 }
 
-interface blurType {
-  enteredFullName: boolean;
-  enteredEmail: boolean;
-  enteredConfirmEmail: boolean;
+interface requestForm {
+  enteredFullName: FieldConfig;
+  enteredEmail: FieldConfig;
+  enteredConfirmEmail: FieldConfig;
 }
 
 const Home = () => {
   const [isOpenModal, setisOpenModal] = useState<boolean>(false);
-  const [isFormIsValid, setisFormIsValid] = useState<boolean>(false);
+  const [isFormValid, setIsFormValid] = useState<boolean>(false);
   const [isSuccessful, setisSuccessful] = useState<boolean>(false);
   const [emailFormatIsValid, setemailFormatIsValid] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
 
+  const validateFullname = (currentValues: requestForm) => {
+    const fullname = currentValues["enteredFullName"].value;
+    if (fullname.trim().toLowerCase() === "") {
+      return "Fullname must not be empty";
+    }
+
+    return "";
+  };
+
+  const validateEmail = (currentValues: requestForm) => {
+    const email = currentValues["enteredEmail"].value;
+    if (email.trim().toLowerCase() === "") {
+      return "Email must not be empty";
+    }
+
+    const isValidEmail = email
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+
+    if (!isValidEmail) {
+      return "Email must not be in the form user@domain.com";
+    }
+
+    return "";
+  };
+
+  const validateEmailConfirmation = (currentValues: requestForm) => {
+    const email = currentValues["enteredEmail"].value;
+    const emailConfirmation = currentValues["enteredConfirmEmail"].value;
+
+    if (emailConfirmation.trim().toLowerCase() === "") {
+      return "Email confirmation must not be empty";
+    }
+
+    if (email.trim().toLowerCase() !== emailConfirmation.trim().toLowerCase()) {
+      return "Email confirmation must be the same as the email address";
+    }
+
+    return "";
+  };
+
   const [values, setValues] = useState<requestForm>({
-    enteredFullName: "",
-    enteredEmail: "",
-    enteredConfirmEmail: "",
+    enteredFullName: {
+      value: "",
+      error: "",
+      validator: validateFullname,
+    },
+    enteredEmail: {
+      value: "",
+      error: "",
+      validator: validateEmail,
+    },
+    enteredConfirmEmail: {
+      value: "",
+      error: "",
+      validator: validateEmailConfirmation,
+    },
   });
 
-  const [blurs, setBlurs] = useState<blurType>({
-    enteredFullName: false,
-    enteredEmail: false,
-    enteredConfirmEmail: false,
-  });
-
-  const enterFullNameIsValid =
-    values["enteredFullName"].trim().toLowerCase() !== "";
-  const fullNameIsInvalid = !enterFullNameIsValid && blurs["enteredFullName"];
-  const enteredEmailIsValid =
-    values["enteredEmail"].includes("@") && values["enteredEmail"].length >= 3;
-  const emailIsInvalid = !enteredEmailIsValid && blurs["enteredEmail"];
-  const enteredCEIsInvalid =
-    values["enteredConfirmEmail"].trim() === values["enteredEmail"].trim();
-  const ceEmailIsInvalid = !enteredCEIsInvalid && blurs["enteredConfirmEmail"];
+  // const enterFullNameIsValid =
+  //   values["enteredFullName"].trim().toLowerCase() !== "";
+  // const fullNameIsInvalid = !enterFullNameIsValid && blurs["enteredFullName"];
+  // const enteredEmailIsValid =
+  //   values["enteredEmail"].includes("@") && values["enteredEmail"].length >= 3;
+  // const emailIsInvalid = !enteredEmailIsValid && blurs["enteredEmail"];
+  // const enteredCEIsInvalid =
+  //   values["enteredConfirmEmail"].trim() === values["enteredEmail"].trim();
+  // const ceEmailIsInvalid = !enteredCEIsInvalid && blurs["enteredConfirmEmail"];
 
   const url = "https://us-central1-blinkapp-684c1.cloudfunctions.net/fakeAuth";
 
-  useEffect(() => {
-    if (enterFullNameIsValid && enteredEmailIsValid && enteredCEIsInvalid) {
-      setisFormIsValid(true);
-    } else {
-      setisFormIsValid(false);
-    }
-  }, [enterFullNameIsValid, enteredEmailIsValid, enteredCEIsInvalid]);
+  // useEffect(() => {
+  //   if (enterFullNameIsValid && enteredEmailIsValid && enteredCEIsInvalid) {
+  //     setisFormIsValid(true);
+  //   } else {
+  //     setisFormIsValid(false);
+  //   }
+  // }, [enterFullNameIsValid, enteredEmailIsValid, enteredCEIsInvalid]);
 
   const onChangedHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setValues({
       ...values,
-      [e.target.name]: e.target.value,
+      [e.target.name]: {
+        ...(values[e.target.name as keyof requestForm] as FieldConfig),
+        value: e.target.value,
+      },
     });
   };
 
   const onBlurHnadler = (e: FocusEvent<HTMLInputElement>) => {
-    setBlurs({
-      ...blurs,
-      [e.target.name]: true,
-    });
+    setValues((currentValues) => ({
+      ...currentValues,
+      [e.target.name]: {
+        ...(currentValues[e.target.name as keyof requestForm] as FieldConfig),
+        error: (
+          currentValues[e.target.name as keyof requestForm] as FieldConfig
+        ).validator(currentValues),
+      },
+    }));
+
+    // const isFormIsValid = Object.values(values).every((value) => {
+    //   return value.error === "";
+    // });
+    // setIsFormValid()
   };
+
+  console.log("values", values);
 
   const sendSubmitHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -95,7 +161,7 @@ const Home = () => {
       })
       .catch((error) => {
         console.log(error);
-        if (values["enteredEmail"] === "usedemail@blinq.app") {
+        if (values["enteredEmail"].value === "usedemail@blinq.app") {
           setemailFormatIsValid(true);
         }
       });
@@ -103,12 +169,12 @@ const Home = () => {
     const newValues = Object.keys(values).reduce((accumulator, key) => {
       return { ...accumulator, [key]: "" };
     }, {});
-    const newBlurs = Object.keys(blurs).reduce((accumulator, key) => {
-      return { ...accumulator, [key]: false };
-    }, {});
+    // const newBlurs = Object.keys(blurs).reduce((accumulator, key) => {
+    //   return { ...accumulator, [key]: false };
+    // }, {});
 
     setValues(newValues as requestForm);
-    setBlurs(newBlurs as blurType);
+    // setBlurs(newBlurs as blurType);
   };
 
   const openModalHandler = () => {
@@ -121,11 +187,11 @@ const Home = () => {
     const newValues = Object.keys(values).reduce((accumulator, key) => {
       return { ...accumulator, [key]: "" };
     }, {});
-    const newBlurs = Object.keys(blurs).reduce((accumulator, key) => {
-      return { ...accumulator, [key]: false };
-    }, {});
+    // const newBlurs = Object.keys(blurs).reduce((accumulator, key) => {
+    //   return { ...accumulator, [key]: false };
+    // }, {});
     setValues(newValues as requestForm);
-    setBlurs(newBlurs as blurType);
+    // setBlurs(newBlurs as blurType);
   };
 
   return (
@@ -165,15 +231,15 @@ const Home = () => {
                   <Input
                     type={"text"}
                     name={"enteredFullName"}
-                    value={values["enteredFullName"]}
+                    value={values["enteredFullName"].value}
                     placeholder="Full Name"
-                    isInValid={fullNameIsInvalid}
+                    isInValid={values["enteredFullName"].error !== ""}
                     onChange={onChangedHandler}
                     onBlur={onBlurHnadler}
                   />
-                  {fullNameIsInvalid && (
+                  {values["enteredFullName"].error !== "" && (
                     <p className="mt-1 text-error text-sm">
-                      Full Name is require
+                      {values["enteredFullName"].error}
                     </p>
                   )}
                 </div>
@@ -181,16 +247,15 @@ const Home = () => {
                   <Input
                     type={"email"}
                     name={"enteredEmail"}
-                    value={values["enteredEmail"]}
+                    value={values["enteredEmail"].value}
                     placeholder="Email"
-                    isInValid={emailIsInvalid}
+                    isInValid={values["enteredEmail"].error !== ""}
                     onChange={onChangedHandler}
                     onBlur={onBlurHnadler}
                   />
-                  {emailIsInvalid && (
+                  {values["enteredEmail"].error !== "" && (
                     <p className="mt-1 text-error text-sm">
-                      Your Email Address must have at least 3 length and
-                      containa single @
+                      {values["enteredEmail"].error}
                     </p>
                   )}
                   {emailFormatIsValid && (
@@ -203,15 +268,15 @@ const Home = () => {
                   <Input
                     type={"email"}
                     name={"enteredConfirmEmail"}
-                    value={values["enteredConfirmEmail"]}
+                    value={values["enteredConfirmEmail"].value}
                     placeholder="Confirm Email"
-                    isInValid={ceEmailIsInvalid}
+                    isInValid={values["enteredConfirmEmail"].error !== ""}
                     onChange={onChangedHandler}
                     onBlur={onBlurHnadler}
                   />
-                  {ceEmailIsInvalid && (
+                  {values["enteredConfirmEmail"].error !== "" && (
                     <p className="mt-1 text-error text-sm">
-                      Email is not equal to confirm Email
+                      {values["enteredConfirmEmail"].error}
                     </p>
                   )}
                 </div>
@@ -224,9 +289,7 @@ const Home = () => {
                     />
                   </div>
                 )}
-                {!isLoading && (
-                  <Button text={"Send"} disabled={!isFormIsValid} />
-                )}
+                {!isLoading && <Button text={"Send"} disabled={!isFormValid} />}
               </div>
             )}
           </form>
