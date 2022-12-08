@@ -52,7 +52,7 @@ const Home = () => {
       );
 
     if (!isValidEmail) {
-      return "Email must not be in the form user@domain.com";
+      return "Email form does not match correctly. Ex:user@domain.com";
     }
 
     return "";
@@ -91,25 +91,7 @@ const Home = () => {
     },
   });
 
-  // const enterFullNameIsValid =
-  //   values["enteredFullName"].trim().toLowerCase() !== "";
-  // const fullNameIsInvalid = !enterFullNameIsValid && blurs["enteredFullName"];
-  // const enteredEmailIsValid =
-  //   values["enteredEmail"].includes("@") && values["enteredEmail"].length >= 3;
-  // const emailIsInvalid = !enteredEmailIsValid && blurs["enteredEmail"];
-  // const enteredCEIsInvalid =
-  //   values["enteredConfirmEmail"].trim() === values["enteredEmail"].trim();
-  // const ceEmailIsInvalid = !enteredCEIsInvalid && blurs["enteredConfirmEmail"];
-
   const url = "https://us-central1-blinkapp-684c1.cloudfunctions.net/fakeAuth";
-
-  // useEffect(() => {
-  //   if (enterFullNameIsValid && enteredEmailIsValid && enteredCEIsInvalid) {
-  //     setisFormIsValid(true);
-  //   } else {
-  //     setisFormIsValid(false);
-  //   }
-  // }, [enterFullNameIsValid, enteredEmailIsValid, enteredCEIsInvalid]);
 
   const onChangedHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setValues({
@@ -122,7 +104,8 @@ const Home = () => {
   };
 
   const onBlurHnadler = (e: FocusEvent<HTMLInputElement>) => {
-    setValues((currentValues) => ({
+    setValues(
+      (currentValues) => ({
       ...currentValues,
       [e.target.name]: {
         ...(currentValues[e.target.name as keyof requestForm] as FieldConfig),
@@ -130,7 +113,8 @@ const Home = () => {
           currentValues[e.target.name as keyof requestForm] as FieldConfig
         ).validator(currentValues),
       },
-    }));
+    })
+    );
 
     // const isFormIsValid = Object.values(values).every((value) => {
     //   return value.error === "";
